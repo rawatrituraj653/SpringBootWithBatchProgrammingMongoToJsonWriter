@@ -16,11 +16,11 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.MongoItemReader;
 import org.springframework.batch.item.json.JacksonJsonObjectMarshaller;
-import org.springframework.batch.item.json.builder.JsonFileItemWriterBuilder;
+import org.springframework.batch.item.json.JsonFileItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -73,16 +73,29 @@ public class MongoBatchConfig {
 	@Bean
 	public ItemProcessor<Product,Product> process(){
 
-		return item->item;
+		return item->{
+			
+			System.out.println(item);
+			return item;
+		
+		};
 	}
 	@Bean
 	public ItemWriter<Product>  write(){
 		
-		return  new JsonFileItemWriterBuilder<Product>()
-				.jsonObjectMarshaller(new JacksonJsonObjectMarshaller<Product>())
-				.resource(new ClassPathResource("product.json"))
-				.name("productjson")
-				.build();
+		JsonFileItemWriter<Product> item= 
+			new JsonFileItemWriter<>(new FileSystemResource("target/product.json"),
+					new JacksonJsonObjectMarshaller<Product>());
+		item.setAppendAllowed(true);
+		item.setName("Employee");
+		item.setLineSeparator("\n");
+		return item;
+		/*
+		 * return new JsonFileItemWriterBuilder<Product>() .jsonObjectMarshaller(new
+		 * JacksonJsonObjectMarshaller<Product>()) .resource(new
+		 * ClassPathResource("product.json")) .name("productjson") .append(true)
+		 * .build();
+		 */
 	}
 	
 	@Bean
